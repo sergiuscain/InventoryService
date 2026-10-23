@@ -8,4 +8,7 @@ public class Stock
     public int QuantityReserved { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    //navigation
+    public Product Product { get; set; } = null!;
 }

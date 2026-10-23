@@ -8,4 +8,7 @@ public class Product
     public decimal Price { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    //navigation
+    public Stock? Stock { get; set; }
 }
