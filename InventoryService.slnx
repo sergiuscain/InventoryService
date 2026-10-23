@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Tests/" />
   <Folder Name="/Элементы решения/">
+    <File Path=".dockerignore" />
     <File Path=".env.example" />
   </Folder>
   <Project Path="InventoryService/InventoryService.csproj" />
