@@ -3,6 +3,7 @@ using InventoryService.Application.Products.Commands.DeleteProduct;
 using InventoryService.Application.Products.Commands.UpdateProduct;
 using InventoryService.Application.Products.Queries.GetProductById;
 using InventoryService.Application.Products.Queries.GetProducts;
+using InventoryService.Application.Products.Queries.GetProductsByIds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,6 +34,19 @@ namespace InventoryService.Api.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
         {
             var products = await _mediator.Send(new GetProductsQuery(page, pageSize), ct);
+            return Ok(products);
+        }
+        [HttpGet("by-ids")]
+        public async Task<IActionResult> GetByIds([FromQuery] string ids, CancellationToken ct)
+        {
+            var parsed = (ids ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(s => Guid.TryParse(s, out var g) ? g : (Guid?)null)
+                .Where(g => g.HasValue)
+                .Select(g => g!.Value)
+                .ToList();
+
+            var products = await _mediator.Send(new GetProductsByIdsQuery(parsed), ct);
             return Ok(products);
         }
 
