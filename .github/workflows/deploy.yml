@@ -1,4 +1,4 @@
-name: build-and-deploy
+name: build
 
 on:
   push:
@@ -28,14 +28,3 @@ jobs:
 
       - name: Push image
         run: docker push --all-tags ${{ env.IMAGE_NAME }}
-
-   deploy:
-    needs: build
-    runs-on: self-hosted
-    steps:
-      - name: Pull and restart container
-        run: |
-          cd /home/server/путь_до_compose
-          docker compose pull api
-          docker compose up -d --no-deps api
-          docker image prune -f
