@@ -1,5 +1,7 @@
 ﻿using InventoryService.Application.Products.Commands.CreateProduct;
 using InventoryService.Application.Products.Commands.DeleteProduct;
+using InventoryService.Application.Products.Commands.ReleaseStock;
+using InventoryService.Application.Products.Commands.ReserveStock;
 using InventoryService.Application.Products.Commands.UpdateProduct;
 using InventoryService.Application.Products.Queries.GetProductById;
 using InventoryService.Application.Products.Queries.GetProducts;
@@ -63,6 +65,22 @@ namespace InventoryService.Api.Controllers
         {
             var deleted = await _mediator.Send(new DeleteProductCommand(id), ct);
             return deleted ? NoContent() : NotFound();
+        }
+
+        [HttpPost("reserve")]
+        public async Task<IActionResult> Reserve(
+    [FromBody] ReserveStockCommand command, CancellationToken ct)
+        {
+            var ok = await _mediator.Send(command, ct);
+            return ok ? Ok() : Conflict(new { message = "Not enough stock or product not found." });
+        }
+
+        [HttpPost("release")]
+        public async Task<IActionResult> Release(
+            [FromBody] ReleaseStockCommand command, CancellationToken ct)
+        {
+            await _mediator.Send(command, ct);
+            return NoContent();
         }
     }
 }
