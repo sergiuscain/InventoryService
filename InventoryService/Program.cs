@@ -16,6 +16,12 @@ builder.Services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbConte
 // MediatR — сканируем сборку Application
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(IAppDbContext).Assembly));
+builder.Services
+    .AddAuthentication(InventoryService.Api.Auth.HeaderAuthenticationHandler.SchemeName)
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions,
+        InventoryService.Api.Auth.HeaderAuthenticationHandler>(
+        InventoryService.Api.Auth.HeaderAuthenticationHandler.SchemeName, _ => { });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -32,6 +38,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

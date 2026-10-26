@@ -7,6 +7,7 @@ using InventoryService.Application.Products.Queries.GetProductById;
 using InventoryService.Application.Products.Queries.GetProducts;
 using InventoryService.Application.Products.Queries.GetProductsByIds;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryService.Api.Controllers
@@ -18,6 +19,12 @@ namespace InventoryService.Api.Controllers
         private readonly IMediator _mediator;
 
         public ProductsController(IMediator mediator) => _mediator = mediator;
+
+        /// <summary>Создать продукт. Только для администраторов.</summary>
+        /// <response code="201">Продукт создан.</response>
+        /// <response code="401">Требуется аутентификация.</response>
+        /// <response code="403">Требуется роль Admin.</response>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateProductCommand command, CancellationToken ct)
         {
@@ -25,6 +32,7 @@ namespace InventoryService.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id }, id);
         }
 
+        /// <summary>Получить продукт по идентификатору.</summary>
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
         {
@@ -32,12 +40,15 @@ namespace InventoryService.Api.Controllers
             return product is null ? NotFound() : Ok(product);
         }
 
+        /// <summary>Список продуктов (пагинация).</summary>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
         {
             var products = await _mediator.Send(new GetProductsQuery(page, pageSize), ct);
             return Ok(products);
         }
+
+        /// <summary>Продукты по списку идентификаторов.</summary>
         [HttpGet("by-ids")]
         public async Task<IActionResult> GetByIds([FromQuery] string ids, CancellationToken ct)
         {
@@ -52,6 +63,12 @@ namespace InventoryService.Api.Controllers
             return Ok(products);
         }
 
+        /// <summary>Обновить продукт. Только для администраторов.</summary>
+        /// <response code="204">Продукт обновлён.</response>
+        /// <response code="401">Требуется аутентификация.</response>
+        /// <response code="403">Требуется роль Admin.</response>
+        /// <response code="404">Продукт не найден.</response>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductCommand command, CancellationToken ct)
         {
@@ -60,6 +77,12 @@ namespace InventoryService.Api.Controllers
             return updated ? NoContent() : NotFound();
         }
 
+        /// <summary>Удалить продукт. Только для администраторов.</summary>
+        /// <response code="204">Продукт удалён.</response>
+        /// <response code="401">Требуется аутентификация.</response>
+        /// <response code="403">Требуется роль Admin.</response>
+        /// <response code="404">Продукт не найден.</response>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
@@ -67,17 +90,17 @@ namespace InventoryService.Api.Controllers
             return deleted ? NoContent() : NotFound();
         }
 
+        /// <summary>Зарезервировать остатки. Внутренний эндпоинт (вызывается OrderService).</summary>
         [HttpPost("reserve")]
-        public async Task<IActionResult> Reserve(
-    [FromBody] ReserveStockCommand command, CancellationToken ct)
+        public async Task<IActionResult> Reserve([FromBody] ReserveStockCommand command, CancellationToken ct)
         {
             var ok = await _mediator.Send(command, ct);
             return ok ? Ok() : Conflict(new { message = "Not enough stock or product not found." });
         }
 
+        /// <summary>Снять резерв. Внутренний эндпоинт (вызывается OrderService).</summary>
         [HttpPost("release")]
-        public async Task<IActionResult> Release(
-            [FromBody] ReleaseStockCommand command, CancellationToken ct)
+        public async Task<IActionResult> Release([FromBody] ReleaseStockCommand command, CancellationToken ct)
         {
             await _mediator.Send(command, ct);
             return NoContent();
