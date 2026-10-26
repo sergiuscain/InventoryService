@@ -1,6 +1,8 @@
 using InventoryService.Application.Common.Interfaces;
+using InventoryService.Consumers;
 using InventoryService.Infrastructure.DependencyInjection;
 using InventoryService.Infrastructure.Persistence;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,22 @@ builder.Services
         InventoryService.Api.Auth.HeaderAuthenticationHandler>(
         InventoryService.Api.Auth.HeaderAuthenticationHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<OrderCompletedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq", "/", h =>
+        {
+            h.Username(builder.Configuration["RabbitMQ:Username"] ?? "guest");
+            h.Password(builder.Configuration["RabbitMQ:Password"] ?? "guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 
 var app = builder.Build();
 
