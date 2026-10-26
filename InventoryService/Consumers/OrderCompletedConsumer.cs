@@ -1,7 +1,7 @@
 ﻿using InventoryService.Application.Common.Interfaces;
-using InventoryService.Events;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using OrderService.Application.Orders.Events;
 
 namespace InventoryService.Consumers;
 
