@@ -1,1 +1,1 @@
-Микросервис для [Микросервисного приложения](https://github.com/sergiuscain/order-platform-infra)
+Микросервис для [микросервисного приложения](https://github.com/sergiuscain/order-platform-infra).
